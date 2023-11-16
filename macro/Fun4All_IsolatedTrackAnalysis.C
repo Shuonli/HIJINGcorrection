@@ -11,7 +11,7 @@
 
 #include <g4centrality/PHG4CentralityReco.h>
 
-#include <energycorrection/EnergyCorrection.h>
+#include </sphenix/user/shuhangli/HIJINGcorrection/HIJINGcorrection/source/EnergyCorrection.h>
 
 R__LOAD_LIBRARY(libfun4all.so)
 R__LOAD_LIBRARY(libg4centrality.so)
@@ -97,7 +97,7 @@ void Fun4All_IsolatedTrackAnalysis(
   PHG4FullProjSpacalCellReco *cemc_cells =
       new PHG4FullProjSpacalCellReco("CEMCCYLCELLRECO");
   cemc_cells->Detector("CEMC");
-  cemc_cells->Verbosity(1);
+  cemc_cells->Verbosity(0);
   cemc_cells->get_light_collection_model().load_data_file(
       string(getenv("CALIBRATIONROOT")) +
           string("/CEMC/LightCollection/Prototype3Module.xml"),
@@ -106,7 +106,7 @@ void Fun4All_IsolatedTrackAnalysis(
 
   PHG4HcalCellReco *ihc = new PHG4HcalCellReco("HCALIN_CELLRECO");
   ihc->Detector("HCALIN");
-  ihc->Verbosity(1);
+  ihc->Verbosity(0);
   se->registerSubsystem(ihc);
 
   PHG4HcalCellReco *ohc = new PHG4HcalCellReco("HCALOUT_CELLRECO");
@@ -117,7 +117,7 @@ void Fun4All_IsolatedTrackAnalysis(
   RawTowerBuilder *ETowerBuilder = new RawTowerBuilder("EmcRawTowerBuilder");
   ETowerBuilder->Detector("CEMC");
   ETowerBuilder->set_sim_tower_node_prefix("SIM");
-  ETowerBuilder->Verbosity(1);
+  ETowerBuilder->Verbosity(0);
   se->registerSubsystem(ETowerBuilder);
 
   HcalRawTowerBuilder *ITowerBuilder =
@@ -136,7 +136,7 @@ void Fun4All_IsolatedTrackAnalysis(
     ITowerBuilder->set_int_param("tower_energy_source",
                                  G4HCALIN::tower_energy_source);
   }
-  ITowerBuilder->Verbosity(1);
+  ITowerBuilder->Verbosity(0);
   se->registerSubsystem(ITowerBuilder);
 
   HcalRawTowerBuilder *OTowerBuilder =
@@ -155,7 +155,7 @@ void Fun4All_IsolatedTrackAnalysis(
     OTowerBuilder->set_int_param("tower_energy_source",
                                  G4HCALOUT::tower_energy_source);
   }
-  OTowerBuilder->Verbosity(1);
+  OTowerBuilder->Verbosity(0);
   se->registerSubsystem(OTowerBuilder);
 
   /*
