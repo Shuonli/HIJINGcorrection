@@ -34,9 +34,11 @@ public:
     int End(PHCompositeNode *topNode) override;
 
     void SetHitNodeName(const std::string &name) { m_HitNodeName = name; }
+    void SetUpweightTruth(bool upweight) { m_upweighttruth = upweight; }
 
 private:
     std::string m_HitNodeName = "G4HIT_CEMC";
+    bool m_upweighttruth = false;
 
     int m_npart =  -1;
 

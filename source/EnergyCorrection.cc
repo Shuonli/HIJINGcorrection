@@ -116,20 +116,21 @@ int EnergyCorrection::process_event(PHCompositeNode *topNode) {
               << std::endl;
     return Fun4AllReturnCodes::ABORTEVENT;
   }
+  if (m_upweighttruth) {
+    PHG4TruthInfoContainer::Range range = truthinfo->GetPrimaryParticleRange();
 
-  PHG4TruthInfoContainer::Range range = truthinfo->GetPrimaryParticleRange();
-
-  for (PHG4TruthInfoContainer::Iterator iter = range.first;
-       iter != range.second; ++iter) {
-    PHG4Particle *particle = iter->second;
-    int pid = particle->get_pid();
-    float pt = sqrt(particle->get_px() * particle->get_px() +
-                    particle->get_py() * particle->get_py());
-    float scale = findcorrection(m_npart, pid, pt);
-    particle->set_e(particle->get_e() * scale);
-    particle->set_px(particle->get_px() * scale);
-    particle->set_py(particle->get_py() * scale);
-    particle->set_pz(particle->get_pz() * scale);
+    for (PHG4TruthInfoContainer::Iterator iter = range.first;
+         iter != range.second; ++iter) {
+      PHG4Particle *particle = iter->second;
+      int pid = particle->get_pid();
+      float pt = sqrt(particle->get_px() * particle->get_px() +
+                      particle->get_py() * particle->get_py());
+      float scale = findcorrection(m_npart, pid, pt);
+      particle->set_e(particle->get_e() * scale);
+      particle->set_px(particle->get_px() * scale);
+      particle->set_py(particle->get_py() * scale);
+      particle->set_pz(particle->get_pz() * scale);
+    }
   }
 
   // get hits

@@ -16,7 +16,7 @@
 R__LOAD_LIBRARY(libfun4all.so)
 R__LOAD_LIBRARY(libg4centrality.so)
 R__LOAD_LIBRARY(libEnergyCorrection.so)
-// example code for running the
+// example code for running the upweighting afterburner, modified from Emma's isotrack analysis macro(thanks ;) )
 void Fun4All_IsolatedTrackAnalysis(
     const string &trackFile = "dst_tracks.list",
     const string &clusterFile = "dst_calo_g4hit.list",
@@ -70,12 +70,16 @@ void Fun4All_IsolatedTrackAnalysis(
   */
   EnergyCorrection *energycorrect = new EnergyCorrection();
   energycorrect->SetHitNodeName("G4HIT_CEMC");
+  //only want to upweight the truth once
+  energycorrect->SetUpWeightTruth(true);
   se->registerSubsystem(energycorrect);
   energycorrect = new EnergyCorrection();
   energycorrect->SetHitNodeName("G4HIT_HCALIN");
   se->registerSubsystem(energycorrect);
+  energycorrect->SetUpWeightTruth(false);
   energycorrect = new EnergyCorrection();
   energycorrect->SetHitNodeName("G4HIT_HCALOUT");
+  energycorrect->SetUpWeightTruth(false);
   se->registerSubsystem(energycorrect);
   /*
     PHG4CylinderCellReco *cemc_cells =
@@ -162,7 +166,8 @@ void Fun4All_IsolatedTrackAnalysis(
   se->registerSubsystem(cent);
  */
   //------------------------------analysis
-  // here------------------------------------------ se->skip(880);
+  // here------------------------------------------ 
+
   se->run(300);
   se->PrintTimer();
   se->End();
