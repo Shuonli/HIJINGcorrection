@@ -50,8 +50,9 @@ int EnergyCorrection::Init(PHCompositeNode *topNode) {
   std::cout << "EnergyCorrection::Init(PHCompositeNode *topNode) Initializing"
             << std::endl;
   // read correction histogram from file
+  std::string filename = "/sphenix/user/shuhangli/dETdeta/macro/fitratio" + m_generatortype + ".root";
   TFile *f_upweight =
-      new TFile("/sphenix/user/shuhangli/dETdeta/macro/fitratio.root");
+      new TFile(filename.c_str());
   std::string postfix[5] = {"0010_ratio", "1020_ratio", "2040_ratio",
                             "4060_ratio", "6092_ratio"};
   for (int i = 0; i < 5; i++) {

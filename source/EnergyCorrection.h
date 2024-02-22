@@ -28,16 +28,19 @@ public:
     /** Called for each event.
         This is where you do the real work.
      */
+
     int process_event(PHCompositeNode *topNode) override;
 
     /// Called at the end of all processing.
     int End(PHCompositeNode *topNode) override;
 
     void SetHitNodeName(const std::string &name) { m_HitNodeName = name; }
-    void SetUpWeightTruth(bool upweight) { m_upweighttruth = upweight; }
+    void SetUpweightTruth(bool upweight) { m_upweighttruth = upweight; }
 
 private:
-    std::string m_HitNodeName = "G4HIT_CEMC";
+    std::string m_HitNodeName {"G4HIT_CEMC"};
+    std::string m_generatortype {"HIJING"};
+    
     bool m_upweighttruth = false;
 
     int m_npart =  -1;
@@ -87,21 +90,19 @@ private:
             weight[lowerBin] = (npart - avgcent[upperBin]) / (avgcent[lowerBin] - avgcent[upperBin]);
             // print all weights and the sum
         }
-        // if pi0 then 50% chance use the correction for pi+ and 50% chance use the correction for pi-
+        // if pi0 then use the average of pi+ and pi-
         if (pid == 111)
         {
-            pid = 211;
-            if (rand() % 2 == 0)
+            for (int i = 0; i < ncentbins; i++)
             {
-                pid = -211;
+                scale += weight[i] * (h_pip[i]->Interpolate(pt) + h_pimi[i]->Interpolate(pt)) / 2;
             }
         }
         if (pid == 130 || pid == 310 || pid == 311)
         {
-            pid = 211;
-            if (rand() % 2 == 0)
+            for (int i = 0; i < ncentbins; i++)
             {
-                pid = -211;
+                scale += weight[i] * (h_kmi[i]->Interpolate(pt) + h_kp[i]->Interpolate(pt)) / 2;
             }
         }
         if (pid == 211)
