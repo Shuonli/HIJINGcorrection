@@ -64,6 +64,35 @@ int EnergyCorrection::Init(PHCompositeNode *topNode) {
     h_kmi[i] = (TH1F *)f_upweight->Get(Form("h_kmi%s", postfix[i].c_str()));
   }
 
+  //set centralities average
+  if(m_generatortype == "HIJING") {
+    avgcent[0] = 329.815;
+    avgcent[1] = 238.602;
+    avgcent[2] = 144.272;
+    avgcent[3] = 64.9728;
+    avgcent[4] = 17.8337;
+  }
+  else if(m_generatortype == "AMPT") {
+    avgcent[0] = 340.095;
+    avgcent[1] = 254.515;
+    avgcent[2] = 160.105;
+    avgcent[3] = 76.1558;
+    avgcent[4] = 22.783;
+  }
+  else if (m_generatortype == "EPOS") {
+    avgcent[0] = 325.8;
+    avgcent[1] = 236.1;
+    avgcent[2] = 141.5;
+    avgcent[3] = 61.6;
+    avgcent[4] = 14.7;
+  }
+  else {
+    std::cout << "EnergyCorrection::Init(PHCompositeNode *topNode) "
+                 "generator type not supported"
+              << std::endl;
+    return Fun4AllReturnCodes::ABORTEVENT;
+  }
+
   return Fun4AllReturnCodes::EVENT_OK;
 }
 

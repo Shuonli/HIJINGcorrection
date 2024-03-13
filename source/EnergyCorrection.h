@@ -54,7 +54,7 @@ private:
     TH1F *h_kmi[5] = {nullptr};
 
     
-    const float avgcent[ncentbins] = {325.8, 236.1, 141.5, 61.6, 14.7};
+    float avgcent[ncentbins] = {325.8, 236.1, 141.5, 61.6, 14.7};
     
 
     float findcorrection(int npart, int pid, float pt)
