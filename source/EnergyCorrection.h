@@ -53,13 +53,18 @@ private:
     TH1F *h_kp[5] = {nullptr};
     TH1F *h_kmi[5] = {nullptr};
 
+    TH1F *h_lambda[5] = {nullptr};
+    TH1F *h_lambdabar[5] = {nullptr}; 
+
     
     float avgcent[ncentbins] = {325.8, 236.1, 141.5, 61.6, 14.7};
+    float avgcentlambda[ncentbins] = {356.192, 238.602, 144.272, 64.9728, 23.566};
     
 
     float findcorrection(int npart, int pid, float pt)
     {
         float weight[ncentbins] = {0};
+        float weightlambda[ncentbins] = {0};
         float scale = 0;
 
         if (npart > avgcent[0] || npart < avgcent[ncentbins - 1])
@@ -76,6 +81,9 @@ private:
             int lowerBin = -1;
             int upperBin = -1;
 
+            int lowerBinlambda = -1;
+            int upperBinlambda = -1;
+
             for (int i = 0; i < ncentbins - 1; i++)
             {
                 if (npart <= avgcent[i] && npart >= avgcent[i + 1])
@@ -85,9 +93,22 @@ private:
                     break;
                 }
             }
+
+            for (int i = 0; i < ncentbins - 1; i++)
+            {
+                if (npart <= avgcentlambda[i] && npart >= avgcentlambda[i + 1])
+                {
+                    lowerBinlambda = i;
+                    upperBinlambda = i + 1;
+                    break;
+                }
+            }
             // interpolate
             weight[upperBin] = (avgcent[lowerBin] - npart) / (avgcent[lowerBin] - avgcent[upperBin]);
             weight[lowerBin] = (npart - avgcent[upperBin]) / (avgcent[lowerBin] - avgcent[upperBin]);
+
+            weightlambda[upperBinlambda] = (avgcentlambda[lowerBinlambda] - npart) / (avgcentlambda[lowerBinlambda] - avgcentlambda[upperBinlambda]);
+            weightlambda[lowerBinlambda] = (npart - avgcentlambda[upperBinlambda]) / (avgcentlambda[lowerBinlambda] - avgcentlambda[upperBinlambda]);
             // print all weights and the sum
         }
         // if pi0 then use the average of pi+ and pi-
@@ -122,24 +143,7 @@ private:
                 scale += weight[i] * h_pimi[i]->Interpolate(pt);
             }
         }
-        else if (pid > 2000 && pid < 4000)
-        {
-
-            // loop over cent bins
-            for (int i = 0; i < ncentbins; i++)
-            {
-                scale += weight[i] * h_p[i]->Interpolate(pt);
-            }
-        }
-        else if (pid < -2000 && pid > -4000)
-        {
-
-            // loop over cent bins
-            for (int i = 0; i < ncentbins; i++)
-            {
-                scale += weight[i] * h_pbar[i]->Interpolate(pt);
-            }
-        }
+      
         // k+
 
         else if (pid == 321)
@@ -158,6 +162,43 @@ private:
             {
 
                 scale += weight[i] * h_kmi[i] -> Interpolate(pt);
+            }
+        }
+        //lambda
+        else if (pid == 3122)
+        {
+            // loop over cent bins
+            for (int i = 0; i < ncentbins; i++)
+            {
+                scale += weightlambda[i] * h_lambda[i]->Interpolate(pt);
+            }
+        }
+        //antilambda
+        else if (pid == -3122)
+        {
+            // loop over cent bins
+            for (int i = 0; i < ncentbins; i++)
+            {
+                scale += weightlambda[i] * h_lambdabar[i]->Interpolate(pt);
+            }
+        }
+
+        else if (pid > 2000 && pid < 4000)
+        {
+
+            // loop over cent bins
+            for (int i = 0; i < ncentbins; i++)
+            {
+                scale += weight[i] * h_p[i]->Interpolate(pt);
+            }
+        }
+        else if (pid < -2000 && pid > -4000)
+        {
+
+            // loop over cent bins
+            for (int i = 0; i < ncentbins; i++)
+            {
+                scale += weight[i] * h_pbar[i]->Interpolate(pt);
             }
         }
         else

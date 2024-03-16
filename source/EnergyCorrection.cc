@@ -32,6 +32,8 @@
 #include <TFile.h>
 #include <TH1.h>
 
+#include <cassert>
+
 //____________________________________________________________________________..
 EnergyCorrection::EnergyCorrection(const std::string &name) : SubsysReco(name) {
   std::cout << "EnergyCorrection::EnergyCorrection(const std::string &name) "
@@ -53,8 +55,14 @@ int EnergyCorrection::Init(PHCompositeNode *topNode) {
   std::string filename = "/sphenix/user/shuhangli/dETdeta/macro/fitratio" + m_generatortype + ".root";
   TFile *f_upweight =
       new TFile(filename.c_str());
+  
   std::string postfix[5] = {"0010_ratio", "1020_ratio", "2040_ratio",
                             "4060_ratio", "6092_ratio"};
+
+  std::string filenamelambda = "/sphenix/user/shuhangli/dETdeta/macro/fitratioLambda" + m_generatortype + ".root";
+  TFile *f_upweightlambda =
+      new TFile(filenamelambda.c_str());
+  
   for (int i = 0; i < 5; i++) {
     h_pimi[i] = (TH1F *)f_upweight->Get(Form("h_pimi%s", postfix[i].c_str()));
     h_pip[i] = (TH1F *)f_upweight->Get(Form("h_pip%s", postfix[i].c_str()));
@@ -62,6 +70,19 @@ int EnergyCorrection::Init(PHCompositeNode *topNode) {
     h_pbar[i] = (TH1F *)f_upweight->Get(Form("h_pbar%s", postfix[i].c_str()));
     h_kp[i] = (TH1F *)f_upweight->Get(Form("h_kp%s", postfix[i].c_str()));
     h_kmi[i] = (TH1F *)f_upweight->Get(Form("h_kmi%s", postfix[i].c_str()));
+
+    h_lambda[i] = (TH1F *)f_upweightlambda->Get(Form("lambdaratio_%d", i));
+    h_lambdabar[i] = (TH1F *)f_upweightlambda->Get(Form("lambdabarratio_%d", i));
+
+    assert(h_pimi[i]);
+    assert(h_pip[i]);
+    assert(h_p[i]);
+    assert(h_pbar[i]);
+    assert(h_kp[i]);
+    assert(h_kmi[i]);
+    assert(h_lambda[i]);
+    assert(h_lambdabar[i]);
+
   }
 
   //set centralities average
@@ -71,6 +92,12 @@ int EnergyCorrection::Init(PHCompositeNode *topNode) {
     avgcent[2] = 144.272;
     avgcent[3] = 64.9728;
     avgcent[4] = 17.8337;
+
+    avgcentlambda[0] = 356.192;
+    avgcentlambda[1] = 238.602;
+    avgcentlambda[2] = 144.272;
+    avgcentlambda[3] = 64.9728;
+    avgcentlambda[4] = 23.566;
   }
   else if(m_generatortype == "AMPT") {
     avgcent[0] = 340.095;
@@ -78,13 +105,27 @@ int EnergyCorrection::Init(PHCompositeNode *topNode) {
     avgcent[2] = 160.105;
     avgcent[3] = 76.1558;
     avgcent[4] = 22.783;
+
+    avgcentlambda[0] = 363.887;
+    avgcentlambda[1] = 254.515;
+    avgcentlambda[2] = 160.105;
+    avgcentlambda[3] = 76.1558;
+    avgcentlambda[4] = 29.5574;
   }
   else if (m_generatortype == "EPOS") {
-    avgcent[0] = 325.8;
-    avgcent[1] = 236.1;
-    avgcent[2] = 141.5;
-    avgcent[3] = 61.6;
-    avgcent[4] = 14.7;
+    avgcent[0] = 326.566;
+    avgcent[1] = 237.198;
+    avgcent[2] = 144.771;
+    avgcent[3] = 66.0863;
+    avgcent[4] = 18.3792;
+
+    avgcentlambda[0] = 356.192;
+    avgcentlambda[1] = 238.602;
+    avgcentlambda[2] = 144.272;
+    avgcentlambda[3] = 64.9728;
+    avgcentlambda[4] = 23.566;
+
+
   }
   else {
     std::cout << "EnergyCorrection::Init(PHCompositeNode *topNode) "
