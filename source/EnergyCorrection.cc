@@ -87,7 +87,7 @@ int EnergyCorrection::Init(PHCompositeNode *topNode) {
 
   //set centralities average
   if(m_generatortype == "HIJING") {
-    avgcent[0] = 329.815;
+    avgcent[0] = 329.815; 
     avgcent[1] = 238.602;
     avgcent[2] = 144.272;
     avgcent[3] = 64.9728;
@@ -193,9 +193,20 @@ int EnergyCorrection::process_event(PHCompositeNode *topNode) {
     for (PHG4TruthInfoContainer::Iterator iter = range.first;
          iter != range.second; ++iter) {
       PHG4Particle *particle = iter->second;
-      int pid = particle->get_pid();
+      float pz = particle->get_pz();
+      
       float pt = sqrt(particle->get_px() * particle->get_px() +
                       particle->get_py() * particle->get_py());
+
+      float p = sqrt(pt * pt + pz * pz);
+
+      float eta = 0.5 * log((p + pz) / (p - pz));
+
+      if (eta < mineta || eta > maxeta)
+        continue;
+
+      int pid = particle->get_pid();
+
       float scale = findcorrection(m_npart, pid, pt);
       particle->set_e(particle->get_e() * scale);
       particle->set_px(particle->get_px() * scale);
@@ -234,10 +245,19 @@ int EnergyCorrection::process_event(PHCompositeNode *topNode) {
                 << trkid << std::endl;
     }
     // get particle pid and pt
-    int pid = part->get_pid();
+    
     float pt =
         sqrt(part->get_px() * part->get_px() + part->get_py() * part->get_py());
+
+    float pz = part->get_pz();
+    float p = sqrt(pt * pt + pz * pz);
+    float eta = 0.5 * log((p + pz) / (p - pz));
+
+    if (eta < mineta || eta > maxeta)
+      continue;
     // find correction factor for G4Hits
+
+    int pid = part->get_pid();
     float scale = findcorrection(m_npart, pid, pt);
 
     // apply correction

@@ -37,6 +37,11 @@ public:
     void SetHitNodeName(const std::string &name) { m_HitNodeName = name; }
     void SetUpweightTruth(bool upweight) { m_upweighttruth = upweight; }
 
+    void SetGeneratorType(const std::string &type) { m_generatortype = type; }
+
+    void SetMinEta(float min) { mineta = min; }
+    void SetMaxEta(float max) { maxeta = max; }
+
 private:
     std::string m_HitNodeName {"G4HIT_CEMC"};
     std::string m_generatortype {"HIJING"};
@@ -44,6 +49,9 @@ private:
     bool m_upweighttruth = false;
 
     int m_npart =  -1;
+
+    float mineta = -3.0;
+    float maxeta = 3.0;
 
     static const int ncentbins = 5;
     TH1F *h_pimi[5] = {nullptr};
