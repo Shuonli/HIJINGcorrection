@@ -42,6 +42,8 @@ public:
     void SetMinEta(float min) { mineta = min; }
     void SetMaxEta(float max) { maxeta = max; }
 
+    void SetReweightHeavierBarions(bool reweight) { reweightheavierbarions = reweight; }
+
 private:
     std::string m_HitNodeName {"G4HIT_CEMC"};
     std::string m_generatortype {"HIJING"};
@@ -50,8 +52,10 @@ private:
 
     int m_npart =  -1;
 
-    float mineta = -3.0;
-    float maxeta = 3.0;
+    float mineta = -2.5;
+    float maxeta = 2.5;
+
+    bool reweightheavierbarions = true;
 
     static const int ncentbins = 5;
     TH1F *h_pimi[5] = {nullptr};
@@ -199,6 +203,10 @@ private:
             {
                 scale += weight[i] * h_p[i]->Interpolate(pt);
             }
+            if (!reweightheavierbarions)
+            {
+                scale = 1;
+            }
         }
         else if (pid < -2000 && pid > -4000)
         {
@@ -207,6 +215,10 @@ private:
             for (int i = 0; i < ncentbins; i++)
             {
                 scale += weight[i] * h_pbar[i]->Interpolate(pt);
+            }
+            if (!reweightheavierbarions)
+            {
+                scale = 1;
             }
         }
         else
