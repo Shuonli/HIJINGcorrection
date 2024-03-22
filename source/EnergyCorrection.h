@@ -42,7 +42,7 @@ public:
     void SetMinEta(float min) { mineta = min; }
     void SetMaxEta(float max) { maxeta = max; }
 
-    void SetReweightHeavierBarions(bool reweight) { reweightheavierbarions = reweight; }
+    void SetReweightHeavierBaryons(bool reweight) { reweightheavierbaryons = reweight; }
 
 private:
     std::string m_HitNodeName {"G4HIT_CEMC"};
@@ -55,7 +55,7 @@ private:
     float mineta = -2.5;
     float maxeta = 2.5;
 
-    bool reweightheavierbarions = true;
+    bool reweightheavierbaryons = true;
 
     static const int ncentbins = 5;
     TH1F *h_pimi[5] = {nullptr};
@@ -176,8 +176,8 @@ private:
                 scale += weight[i] * h_kmi[i] -> Interpolate(pt);
             }
         }
-        //lambda
-        else if (pid == 3122)
+        //lambda and sigmas
+        else if (pid == 3122 || pid == 3222 || pid == 3212 || pid == 3112)
         {
             // loop over cent bins
             for (int i = 0; i < ncentbins; i++)
@@ -185,8 +185,8 @@ private:
                 scale += weightlambda[i] * h_lambda[i]->Interpolate(pt);
             }
         }
-        //antilambda
-        else if (pid == -3122)
+        //antilambda and antisigmas
+        else if (pid == -3122 || pid == -3222 || pid == -3212 || pid == -3112)
         {
             // loop over cent bins
             for (int i = 0; i < ncentbins; i++)
@@ -203,7 +203,7 @@ private:
             {
                 scale += weight[i] * h_p[i]->Interpolate(pt);
             }
-            if (!reweightheavierbarions)
+            if (!reweightheavierbaryons)
             {
                 scale = 1;
             }
@@ -216,7 +216,7 @@ private:
             {
                 scale += weight[i] * h_pbar[i]->Interpolate(pt);
             }
-            if (!reweightheavierbarions)
+            if (!reweightheavierbaryons)
             {
                 scale = 1;
             }
