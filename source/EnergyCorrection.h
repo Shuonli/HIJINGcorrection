@@ -7,6 +7,7 @@
 #include <TH1.h>
 
 #include <string>
+#include <iostream>
 
 class PHCompositeNode;
 
@@ -78,6 +79,37 @@ private:
         float weight[ncentbins] = {0};
         float weightlambda[ncentbins] = {0};
         float scale = 0;
+        if (npart > avgcentlambda[0] || npart < avgcentlambda[ncentbins - 1])
+        {
+            if (npart > avgcentlambda[0])
+                weightlambda[0] = 1;
+            if (npart < avgcentlambda[ncentbins - 1])
+                weightlambda[ncentbins - 1] = 1;           
+        }
+        else{
+
+             // use interpolation here
+            // first find which two bins the npart falls in between
+
+            int lowerBinlambda = -1;
+            int upperBinlambda = -1;
+
+
+            for (int i = 0; i < ncentbins - 1; i++)
+            {
+                if (npart <= avgcentlambda[i] && npart >= avgcentlambda[i + 1])
+                {
+                    lowerBinlambda = i;
+                    upperBinlambda = i + 1;
+                    break;
+                }
+            }
+
+            weightlambda[upperBinlambda] = (avgcentlambda[lowerBinlambda] - npart) / (avgcentlambda[lowerBinlambda] - avgcentlambda[upperBinlambda]);
+            weightlambda[lowerBinlambda] = (npart - avgcentlambda[upperBinlambda]) / (avgcentlambda[lowerBinlambda] - avgcentlambda[upperBinlambda]);
+            
+        }
+
 
         if (npart > avgcent[0] || npart < avgcent[ncentbins - 1])
         {
@@ -93,8 +125,7 @@ private:
             int lowerBin = -1;
             int upperBin = -1;
 
-            int lowerBinlambda = -1;
-            int upperBinlambda = -1;
+        
 
             for (int i = 0; i < ncentbins - 1; i++)
             {
@@ -106,39 +137,29 @@ private:
                 }
             }
 
-            for (int i = 0; i < ncentbins - 1; i++)
-            {
-                if (npart <= avgcentlambda[i] && npart >= avgcentlambda[i + 1])
-                {
-                    lowerBinlambda = i;
-                    upperBinlambda = i + 1;
-                    break;
-                }
-            }
+         
             // interpolate
             weight[upperBin] = (avgcent[lowerBin] - npart) / (avgcent[lowerBin] - avgcent[upperBin]);
             weight[lowerBin] = (npart - avgcent[upperBin]) / (avgcent[lowerBin] - avgcent[upperBin]);
 
-            weightlambda[upperBinlambda] = (avgcentlambda[lowerBinlambda] - npart) / (avgcentlambda[lowerBinlambda] - avgcentlambda[upperBinlambda]);
-            weightlambda[lowerBinlambda] = (npart - avgcentlambda[upperBinlambda]) / (avgcentlambda[lowerBinlambda] - avgcentlambda[upperBinlambda]);
-            // print all weights and the sum
+           // print all weights and the sum
         }
         // if pi0 then use the average of pi+ and pi-
         if (pid == 111)
         {
             for (int i = 0; i < ncentbins; i++)
             {
-                scale += weight[i] * (h_pip[i]->Interpolate(pt) + h_pimi[i]->Interpolate(pt)) / 2;
+                scale += weight[i] * (h_pip[i]->Interpolate(pt) + h_pimi[i]->Interpolate(pt)) / 2.;
             }
         }
-        if (pid == 130 || pid == 310 || pid == 311)
+        else if (pid == 130 || pid == 310 || pid == 311)
         {
             for (int i = 0; i < ncentbins; i++)
             {
-                scale += weight[i] * (h_kmi[i]->Interpolate(pt) + h_kp[i]->Interpolate(pt)) / 2;
+                scale += weight[i] * (h_kmi[i]->Interpolate(pt) + h_kp[i]->Interpolate(pt)) / 2.;
             }
         }
-        if (pid == 211)
+        else if (pid == 211)
         {
             // loop over cent bins
             for (int i = 0; i < ncentbins; i++)
@@ -184,6 +205,7 @@ private:
             {
                 scale += weightlambda[i] * h_lambda[i]->Interpolate(pt);
             }
+            
         }
         //antilambda and antisigmas
         else if (pid == -3122 || pid == -3222 || pid == -3212 || pid == -3112)
@@ -225,7 +247,6 @@ private:
         {
             scale = 1;
         }
-       
         return scale;
     }
 };

@@ -187,33 +187,7 @@ int EnergyCorrection::process_event(PHCompositeNode *topNode) {
               << std::endl;
     return Fun4AllReturnCodes::ABORTEVENT;
   }
-  if (m_upweighttruth) {
-    PHG4TruthInfoContainer::Range range = truthinfo->GetPrimaryParticleRange();
-
-    for (PHG4TruthInfoContainer::Iterator iter = range.first;
-         iter != range.second; ++iter) {
-      PHG4Particle *particle = iter->second;
-      float pz = particle->get_pz();
-      
-      float pt = sqrt(particle->get_px() * particle->get_px() +
-                      particle->get_py() * particle->get_py());
-
-      float p = sqrt(pt * pt + pz * pz);
-
-      float eta = 0.5 * log((p + pz) / (p - pz));
-
-      if (eta < mineta || eta > maxeta)
-        continue;
-
-      int pid = particle->get_pid();
-
-      float scale = findcorrection(m_npart, pid, pt);
-      particle->set_e(particle->get_e() * scale);
-      particle->set_px(particle->get_px() * scale);
-      particle->set_py(particle->get_py() * scale);
-      particle->set_pz(particle->get_pz() * scale);
-    }
-  }
+ 
 
   // get hits
   PHG4HitContainer *hits =
@@ -263,6 +237,34 @@ int EnergyCorrection::process_event(PHCompositeNode *topNode) {
     // apply correction
     hit->set_edep(hit->get_edep() * scale);
     hit->set_light_yield(hit->get_light_yield() * scale);
+  }
+
+  if (m_upweighttruth) {
+    PHG4TruthInfoContainer::Range range = truthinfo->GetPrimaryParticleRange();
+
+    for (PHG4TruthInfoContainer::Iterator iter = range.first;
+         iter != range.second; ++iter) {
+      PHG4Particle *particle = iter->second;
+      float pz = particle->get_pz();
+      
+      float pt = sqrt(particle->get_px() * particle->get_px() +
+                      particle->get_py() * particle->get_py());
+
+      float p = sqrt(pt * pt + pz * pz);
+
+      float eta = 0.5 * log((p + pz) / (p - pz));
+
+      if (eta < mineta || eta > maxeta)
+        continue;
+
+      int pid = particle->get_pid();
+
+      float scale = findcorrection(m_npart, pid, pt);
+      particle->set_e(particle->get_e() * scale);
+      particle->set_px(particle->get_px() * scale);
+      particle->set_py(particle->get_py() * scale);
+      particle->set_pz(particle->get_pz() * scale);
+    }
   }
 
   return Fun4AllReturnCodes::EVENT_OK;
