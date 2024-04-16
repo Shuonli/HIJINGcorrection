@@ -266,7 +266,6 @@ int EnergyCorrection::process_event(PHCompositeNode *topNode) {
       float e = part->get_e();
       float y = 0.5 * log((e + pz) / (e - pz));
       scale = findrapcorrection(pid, pt, y);
-      std::cout << "y: " << y << " pid: " << pid << " pt: " << pt << " scale: " << scale << std::endl;
     }
 
     // apply correction
