@@ -37,6 +37,7 @@ public:
 
     void SetHitNodeName(const std::string &name) { m_HitNodeName = name; }
     void SetUpweightTruth(bool upweight) { m_upweighttruth = upweight; }
+    void SetRapidityDep(bool rapidity = true) { rapiditydep = rapidity; }
 
     void SetGeneratorType(const std::string &type) { m_generatortype = type; }
 
@@ -50,6 +51,7 @@ private:
     std::string m_generatortype {"HIJING"};
     
     bool m_upweighttruth = false;
+    bool rapiditydep = false;
 
     int m_npart =  -1;
 
@@ -59,15 +61,140 @@ private:
     bool reweightheavierbaryons = true;
 
     static const int ncentbins = 5;
-    TH1F *h_pimi[5] = {nullptr};
-    TH1F *h_pip[5] = {nullptr};
-    TH1F *h_p[5] = {nullptr};
-    TH1F *h_pbar[5] = {nullptr};
-    TH1F *h_kp[5] = {nullptr};
-    TH1F *h_kmi[5] = {nullptr};
+    TH1F *h_pimi[ncentbins] = {nullptr};
+    TH1F *h_pip[ncentbins] = {nullptr};
+    TH1F *h_p[ncentbins] = {nullptr};
+    TH1F *h_pbar[ncentbins] = {nullptr};
+    TH1F *h_kp[ncentbins] = {nullptr};
+    TH1F *h_kmi[ncentbins] = {nullptr};
 
-    TH1F *h_lambda[5] = {nullptr};
-    TH1F *h_lambdabar[5] = {nullptr}; 
+    TH1F *h_lambda[ncentbins] = {nullptr};
+    TH1F *h_lambdabar[ncentbins] = {nullptr};   
+
+    //pi
+    std::vector<std::vector<float>> rapIntervalsPi = {{-0.1,0.},{0.,0.1},{0.4,0.6},{0.6,0.8},{0.8,1.0}, {1.0,1.2},{1.2,1.4},{2.1,2.3},{2.4,2.6},{3.0,3.1},{3.1,3.2},{3.2,3.3}, {3.3,3.4},{3.4,3.66}};
+    //K
+    std::vector<std::vector<float>> rapIntervalsK = {{-0.1,0.},{0.,0.1},{0.4,0.6},{0.6,0.8},{0.8,1.0}, {1.0,1.2},{2.0,2.2},{2.3,2.5},{2.9,3.0},{3.0,3.1},{3.1,3.2},{3.2,3.4}};
+    //p
+    std::vector<std::vector<float>> rapIntervalsP = {{-0.1,0.1},{0.75,0.95},{1.7,2.4},{2.7,3.1}};
+    //pbar
+    std::vector<std::vector<float>> rapIntervalsPbar = {{-0.1,0.1},{0.75,0.95},{1.7,2.4},{2.7,3.1}};
+
+    //rapidity dependent correction
+    static const int Pihistosize = 14;
+    static const int Khistosize = 12;
+    static const int Phistosize = 4;
+    static const int Pbarhistosize = 4;
+
+    TH1F *hPiplus[Pihistosize];
+    TH1F *hPiminus[Pihistosize];
+    TH1F *hKplus[Khistosize];
+    TH1F *hKminus[Khistosize];
+    TH1F *hP[Phistosize];
+    TH1F *hPbar[Pbarhistosize];
+
+    const std::vector<std::vector<float>>& getRapidityIntervals(int pid) {
+    switch(pid) {
+        case 211: return rapIntervalsPi;
+        case -211: return rapIntervalsPi;
+        case 321: return rapIntervalsK;
+        case -321: return rapIntervalsK;
+        case 2212: return rapIntervalsP;
+        case -2212: return rapIntervalsPbar;
+        default: throw std::invalid_argument("Invalid particle ID");
+    }
+}   
+
+    TH1F* getHist(int pid, int i) {
+    switch(pid) {
+        case 211: return hPiplus[i];
+        case -211: return hPiminus[i];
+        case 321: return hKplus[i];
+        case -321: return hKminus[i];
+        case 2212: return hP[i];
+        case -2212: return hPbar[i];
+
+        default: throw std::invalid_argument("Invalid particle ID");
+    }
+
+    }
+
+    float findrapscale(int pid, float pt, float y){
+        float scale = 1;
+        y = std::abs(y);
+        const auto& rapIntervals = getRapidityIntervals(pid);
+        int Lowerbin = -1;
+        int Upperbin = 1000;
+
+        std::vector<float> meanrapidity;
+        for (int i = 0; i < (int)rapIntervals.size(); i++)
+        {
+            meanrapidity.push_back(abs(rapIntervals[i][0] + rapIntervals[i][1]) / 2);
+        }
+        // find which two bins the y falls in between, and interpolate
+        for (int i = 0; i < (int) meanrapidity.size() - 1; i++)
+        {
+
+            if (y >= meanrapidity[i] && y <= meanrapidity[i + 1])
+            {
+                Lowerbin = i;
+                Upperbin = i + 1;
+                break;
+            }
+        }
+        if(y < meanrapidity[0]){
+            Lowerbin = -1;
+            Upperbin = 0;
+        }
+        if(y > meanrapidity[meanrapidity.size()-1]){
+            Lowerbin = meanrapidity.size()-1;
+            Upperbin = 1000;
+        }
+        //interpolation
+        if (Lowerbin == -1 && Upperbin == 0)
+        {
+            TH1F *h = getHist(pid, Upperbin);
+            scale = h->Interpolate(pt);
+        }
+        else if (Upperbin == 1000)
+        {
+            TH1F *h = getHist(pid, Lowerbin);
+            scale = h->Interpolate(pt);
+        }
+        else
+        {
+            TH1F *h1 = getHist(pid, Lowerbin);
+            TH1F *h2 = getHist(pid, Upperbin);
+            scale = (h1->Interpolate(pt) * (meanrapidity[Upperbin] - y) + h2->Interpolate(pt) * (y - meanrapidity[Lowerbin])) / (meanrapidity[Upperbin] - meanrapidity[Lowerbin]);
+        }
+        return scale;
+    }
+
+    float findrapcorrection(int pid, float pt, float y)
+    {
+        float scale = 1;
+        if (pid == 211 || pid == -211 || pid == 321 || pid == -321 || pid == 2212 || pid == -2212)
+        {
+            scale = findrapscale(pid, pt, y);
+        }
+        else if(pid == 111){
+            scale = (findrapscale(211, pt, y) + findrapscale(-211, pt, y)) / 2.;
+        }
+        else if(pid == 130 || pid == 310 || pid == 311){
+            scale = (findrapscale(321, pt, y) + findrapscale(-321, pt, y)) / 2.;
+        }
+        else if(pid > 2000 && pid < 4000){
+            scale = findrapscale(2212, pt, y);
+        }
+        else if(pid < -2000 && pid > -4000){
+            scale = findrapscale(-2212, pt, y);
+        }
+        return scale;
+    }
+
+
+
+
 
     
     float avgcent[ncentbins] = {325.8, 236.1, 141.5, 61.6, 14.7};
@@ -205,6 +332,7 @@ private:
             {
                 scale += weightlambda[i] * h_lambda[i]->Interpolate(pt);
             }
+            std::cout<<"pid = "<<pid<<" pt = "<<pt<<" scale = "<<scale<<std::endl;
             
         }
         //antilambda and antisigmas

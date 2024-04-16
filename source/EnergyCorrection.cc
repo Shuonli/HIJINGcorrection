@@ -133,6 +133,32 @@ int EnergyCorrection::Init(PHCompositeNode *topNode) {
               << std::endl;
     return Fun4AllReturnCodes::ABORTEVENT;
   }
+  if(rapiditydep){
+    std::string filename  = "/sphenix/u/shuhang98/MakePlots/yspectrum/fittedratios.root";
+    TFile *f_upweightrap = new TFile(filename.c_str());
+
+     for (int i = 0; i < Pihistosize; i++) {
+        hPiplus[i] = (TH1F *)f_upweightrap->Get(Form("hPiplus_%d", i));
+        hPiminus[i] = (TH1F *)f_upweightrap->Get(Form("hPiminus_%d", i));
+        assert(hPiplus[i]);
+        assert(hPiminus[i]);
+     }
+      for (int i = 0; i < Khistosize; i++) {
+          hKplus[i] = (TH1F *)f_upweightrap->Get(Form("hKplus_%d", i));
+          hKminus[i] = (TH1F *)f_upweightrap->Get(Form("hKminus_%d", i));
+          assert(hKplus[i]);
+          assert(hKminus[i]);
+      }
+      for (int i = 0; i < Phistosize; i++) {
+          hP[i] = (TH1F *)f_upweightrap->Get(Form("hP_%d", i));
+          assert(hP[i]);
+      }
+      for (int i = 0; i < Pbarhistosize; i++) {
+          hPbar[i] = (TH1F *)f_upweightrap->Get(Form("hPbar_%d", i));
+          assert(hPbar[i]);
+      } 
+
+  }
 
   return Fun4AllReturnCodes::EVENT_OK;
 }
@@ -226,13 +252,22 @@ int EnergyCorrection::process_event(PHCompositeNode *topNode) {
     float pz = part->get_pz();
     float p = sqrt(pt * pt + pz * pz);
     float eta = 0.5 * log((p + pz) / (p - pz));
+    
 
     if (eta < mineta || eta > maxeta)
       continue;
     // find correction factor for G4Hits
-
+    float scale = 1.0;
     int pid = part->get_pid();
-    float scale = findcorrection(m_npart, pid, pt);
+    if(!rapiditydep){
+      scale = findcorrection(m_npart, pid, pt);
+    }
+    else{
+      float e = part->get_e();
+      float y = 0.5 * log((e + pz) / (e - pz));
+      scale = findrapcorrection(pid, pt, y);
+      std::cout << "y: " << y << " pid: " << pid << " pt: " << pt << " scale: " << scale << std::endl;
+    }
 
     // apply correction
     hit->set_edep(hit->get_edep() * scale);
