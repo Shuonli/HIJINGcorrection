@@ -156,7 +156,9 @@ int EnergyCorrection::Init(PHCompositeNode *topNode) {
       for (int i = 0; i < Pbarhistosize; i++) {
           hPbar[i] = (TH1F *)f_upweightrap->Get(Form("hPbar_%d", i));
           assert(hPbar[i]);
-      } 
+      }
+      hPratio = (TH1F *)f_upweightrap->Get("hPratio_0");
+      hPbarratio = (TH1F *)f_upweightrap->Get("hPbarratio_0");
 
   }
 
@@ -265,7 +267,7 @@ int EnergyCorrection::process_event(PHCompositeNode *topNode) {
     else{
       float e = part->get_e();
       float y = 0.5 * log((e + pz) / (e - pz));
-      scale = findrapcorrection(pid, pt, y);
+      scale = findrapcorrection(pid, pt, y, m_npart);
     }
 
     // apply correction

@@ -86,12 +86,14 @@ private:
     static const int Phistosize = 4;
     static const int Pbarhistosize = 4;
 
-    TH1F *hPiplus[Pihistosize];
-    TH1F *hPiminus[Pihistosize];
-    TH1F *hKplus[Khistosize];
-    TH1F *hKminus[Khistosize];
-    TH1F *hP[Phistosize];
-    TH1F *hPbar[Pbarhistosize];
+    TH1F *hPiplus[Pihistosize] = {nullptr};
+    TH1F *hPiminus[Pihistosize] = {nullptr};
+    TH1F *hKplus[Khistosize] = {nullptr};
+    TH1F *hKminus[Khistosize] = {nullptr};
+    TH1F *hP[Phistosize] = {nullptr};
+    TH1F *hPbar[Pbarhistosize] = {nullptr};
+    TH1F *hPratio = nullptr;
+    TH1F *hPbarratio = nullptr;
 
     const std::vector<std::vector<float>>& getRapidityIntervals(int pid) {
     switch(pid) {
@@ -170,7 +172,7 @@ private:
         return scale;
     }
 
-    float findrapcorrection(int pid, float pt, float y)
+    float findrapcorrection(int pid, float pt, float y, int npart)
     {
         float scale = 1;
         if (pid == 211 || pid == -211 || pid == 321 || pid == -321 || pid == 2212 || pid == -2212)
@@ -183,11 +185,22 @@ private:
         else if(pid == 130 || pid == 310 || pid == 311){
             scale = (findrapscale(321, pt, y) + findrapscale(-321, pt, y)) / 2.;
         }
+        //if proton or neutron
+        else if (pid == 2212 || pid == 2112)
+        {
+            scale = findrapscale(2212, pt, y) * hPratio->Interpolate(std::abs(y)) / hPratio->Interpolate(0);
+        }
+        //if antiproton or antineutron
+        else if (pid == -2212 || pid == -2112)
+        {
+            scale = findrapscale(-2212, pt, y) * hPbarratio->Interpolate(std::abs(y)) / hPratio->Interpolate(0);
+        }
+        //other baryons just use PHENIX and STAR data
         else if(pid > 2000 && pid < 4000){
-            scale = findrapscale(2212, pt, y);
+            scale = findcorrection(npart,2212, pt);
         }
         else if(pid < -2000 && pid > -4000){
-            scale = findrapscale(-2212, pt, y);
+            scale = findcorrection(npart,-2212, pt);
         }
         return scale;
     }
