@@ -188,12 +188,12 @@ private:
         //if proton or neutron
         else if (pid == 2212 || pid == 2112)
         {
-            scale = findrapscale(2212, pt, y) * hPratio->Interpolate(std::abs(y)) / hPratio->Interpolate(0);
+            scale = findcorrection(npart,2212, pt) * hPratio->Interpolate(std::abs(y)) / hPratio->Interpolate(0);
         }
         //if antiproton or antineutron
         else if (pid == -2212 || pid == -2112)
         {
-            scale = findrapscale(-2212, pt, y) * hPbarratio->Interpolate(std::abs(y)) / hPratio->Interpolate(0);
+            scale = findcorrection(npart,-2212, pt) * hPbarratio->Interpolate(std::abs(y)) / hPratio->Interpolate(0);
         }
         //other baryons just use PHENIX and STAR data
         else if(pid > 2000 && pid < 4000){
