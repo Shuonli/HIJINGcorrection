@@ -94,6 +94,10 @@ private:
     TH1F *hPbar[Pbarhistosize] = {nullptr};
     TH1F *hPratio = nullptr;
     TH1F *hPbarratio = nullptr;
+    TH1F *hPipratio = nullptr;
+    TH1F* hPimratio = nullptr;
+    TH1F* hKpratio = nullptr;
+    TH1F* hKmratio = nullptr;
 
     const std::vector<std::vector<float>>& getRapidityIntervals(int pid) {
     switch(pid) {
@@ -175,15 +179,29 @@ private:
     float findrapcorrection(int pid, float pt, float y, int npart)
     {
         float scale = 1;
-        if (pid == 211 || pid == -211 || pid == 321 || pid == -321 || pid == 2212 || pid == -2212)
+        if (pid == 211 )
         {
-            scale = findrapscale(pid, pt, y);
+            //scale = findrapscale(pid, pt, y);
+            scale = findcorrection(npart,211, pt) * hPipratio->Interpolate(std::abs(y)) / hPipratio->Interpolate(0);
+        }
+        else if(pid == -211){
+            scale = findcorrection(npart,-211, pt) * hPimratio->Interpolate(std::abs(y)) / hPimratio->Interpolate(0);
+        }
+        else if(pid == 321){
+            scale = findcorrection(npart,321, pt) * hKpratio->Interpolate(std::abs(y)) / hKpratio->Interpolate(0);
+        }
+        else if(pid == -321){
+            scale = findcorrection(npart,-321, pt) * hKmratio->Interpolate(std::abs(y)) / hKmratio->Interpolate(0);
         }
         else if(pid == 111){
-            scale = (findrapscale(211, pt, y) + findrapscale(-211, pt, y)) / 2.;
+            float scaleplus = findcorrection(npart,211, pt) * hPipratio->Interpolate(std::abs(y)) / hPipratio->Interpolate(0);
+            float scaleminus = findcorrection(npart,-211, pt) * hPimratio->Interpolate(std::abs(y)) / hPimratio->Interpolate(0);
+            scale = (scaleplus + scaleminus) / 2.;
         }
         else if(pid == 130 || pid == 310 || pid == 311){
-            scale = (findrapscale(321, pt, y) + findrapscale(-321, pt, y)) / 2.;
+            float scaleplus = findcorrection(npart,321, pt) * hKpratio->Interpolate(std::abs(y)) / hKpratio->Interpolate(0);
+            float scaleminus = findcorrection(npart,-321, pt) * hKmratio->Interpolate(std::abs(y)) / hKmratio->Interpolate(0);
+            scale = (scaleplus + scaleminus) / 2.;
         }
         //if proton or neutron
         else if (pid == 2212 || pid == 2112)

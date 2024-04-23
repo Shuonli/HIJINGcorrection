@@ -159,7 +159,18 @@ int EnergyCorrection::Init(PHCompositeNode *topNode) {
       }
       hPratio = (TH1F *)f_upweightrap->Get("hPratio_0");
       hPbarratio = (TH1F *)f_upweightrap->Get("hPbarratio_0");
+      hPipratio = (TH1F *)f_upweightrap->Get("hPipratio_0");
+      hPimratio = (TH1F *)f_upweightrap->Get("hPimratio_0");
+      hKpratio = (TH1F *)f_upweightrap->Get("hKpratio_0");
+      hKmratio = (TH1F *)f_upweightrap->Get("hKmratio_0");
+      assert(hPratio);
+      assert(hPbarratio);
+      assert(hPipratio);
+      assert(hPimratio);
+      assert(hKpratio);
+      assert(hKmratio);
 
+      
   }
 
   return Fun4AllReturnCodes::EVENT_OK;
