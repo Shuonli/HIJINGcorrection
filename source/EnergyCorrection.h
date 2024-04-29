@@ -215,11 +215,12 @@ private:
         }
         //other baryons just use PHENIX and STAR data
         else if(pid > 2000 && pid < 4000){
-            scale = findcorrection(npart,2212, pt);
+            scale = findcorrection(npart,pid, pt);
         }
         else if(pid < -2000 && pid > -4000){
-            scale = findcorrection(npart,-2212, pt);
+            scale = findcorrection(npart,pid, pt);
         }
+        //std::cout<<"PHENIX" <<findcorrection(npart,pid, pt) << "RAPIDITY" << scale << std::endl; 
         return scale;
     }
 
@@ -363,7 +364,6 @@ private:
             {
                 scale += weightlambda[i] * h_lambda[i]->Interpolate(pt);
             }
-            std::cout<<"pid = "<<pid<<" pt = "<<pt<<" scale = "<<scale<<std::endl;
             
         }
         //antilambda and antisigmas
